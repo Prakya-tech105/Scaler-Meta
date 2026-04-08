@@ -1,4 +1,5 @@
 numpy
+cloudpickle
 gymnasium
 stable-baselines3
 torch
