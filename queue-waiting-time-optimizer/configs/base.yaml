@@ -1,0 +1,13 @@
+seed: 42
+selected_scenario: medium
+
+reward:
+  waiting_time_weight: 1.0
+  open_counter_weight: 0.35
+  queue_length_weight: 0.2
+  action_smoothness_weight: 0.05
+
+scenario_overrides:
+  easy: {}
+  medium: {}
+  hard: {}

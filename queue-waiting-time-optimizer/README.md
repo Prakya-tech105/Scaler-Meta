@@ -1,0 +1,137 @@
+# Queue Waiting Time Optimizer
+
+A practical reinforcement learning project for controlling queue counters in canteens, help desks, and ticket counters.
+
+The goal is to choose one of three discrete actions at each timestep:
+- `0` = close a counter
+- `1` = do nothing
+- `2` = open a counter
+
+The agent learns to reduce waiting time while avoiding unnecessary counters.
+
+## Tech Stack
+- Python
+- NumPy
+- Gymnasium
+- Stable-Baselines3 DQN
+- Matplotlib
+- Plotly
+- Gradio
+- Docker
+- Hugging Face Spaces
+- OpenEnv dependency listed in `requirements.txt`
+
+## Project Layout
+- `src/qwt_optimizer/core.py` - actions, scenarios, reward, and state helpers
+- `src/qwt_optimizer/agents/rule_based.py` - rule-based baseline policy
+- `src/qwt_optimizer/envs/queue_simulator.py` - core queue simulator
+- `src/qwt_optimizer/envs/queue_gym_env.py` - Gymnasium wrapper
+- `src/qwt_optimizer/utils/seeding.py` - reproducibility helper
+- `scripts/phase1_smoke_test.py` - phase 1 validation
+- `scripts/phase2_baseline_demo.py` - baseline demo
+- `scripts/phase3_simulator_demo.py` - simulator demo
+- `scripts/phase4_gym_demo.py` - Gym wrapper demo
+- `scripts/phase5_train_dqn.py` - DQN training
+- `scripts/phase5_dqn_inference_demo.py` - DQN inference demo
+- `scripts/phase6_evaluate_agents.py` - baseline vs DQN evaluation
+- `scripts/phase7_plot_results.py` - plot generation
+- `app.py` - Hugging Face Spaces and local Gradio entrypoint
+- `app/gradio_app.py` - Gradio UI implementation
+- `Dockerfile` - reproducible container build
+
+## Setup
+Create a virtual environment and install dependencies.
+
+```powershell
+cd "c:/Prakya credentials/Scaler-Meta/queue-waiting-time-optimizer"
+py -3.11 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -e .[dev]
+```
+
+If your machine only has Python 3.13, install the packages there, but note that RL packages are usually more reliable on Python 3.11.
+
+## Phase 1 to Phase 4 Checks
+```powershell
+python scripts/phase1_smoke_test.py
+python scripts/phase2_baseline_demo.py
+python scripts/phase3_simulator_demo.py
+python scripts/phase4_gym_demo.py
+```
+
+Expected result:
+- The smoke test prints the action mapping, a valid state dictionary, and a reward value.
+- The baseline demo prints 0/1/2 actions according to queue size.
+- The simulator demo prints queue dynamics over time.
+- The Gym demo prints Gymnasium-style observations and rewards.
+
+## Train DQN
+```powershell
+python scripts/phase5_train_dqn.py --scenario medium --seed 42 --timesteps 30000 --model-out outputs/models/dqn_queue_optimizer
+```
+
+This saves:
+- `outputs/models/dqn_queue_optimizer.zip`
+- training monitor CSV in `outputs/metrics/`
+
+## Run DQN Inference
+```powershell
+python scripts/phase5_dqn_inference_demo.py --scenario medium --seed 42 --model-path outputs/models/dqn_queue_optimizer --steps 20
+```
+
+## Evaluate Baseline vs DQN
+```powershell
+python scripts/phase6_evaluate_agents.py --model-path outputs/models/dqn_queue_optimizer --episodes 5 --max-steps 300 --seed 42
+```
+
+Outputs:
+- `outputs/metrics/evaluation_summary.csv`
+- `outputs/metrics/evaluation_traces.csv`
+
+## Plot Results
+```powershell
+python scripts/phase7_plot_results.py --summary-csv outputs/metrics/evaluation_summary.csv --trace-csv outputs/metrics/evaluation_traces.csv --out-dir outputs/plots
+```
+
+Generated plots:
+- `outputs/plots/summary_comparison.png`
+- `outputs/plots/trace_easy.png`
+- `outputs/plots/trace_medium.png`
+- `outputs/plots/trace_hard.png`
+
+## Run the Gradio App
+```powershell
+python app.py
+```
+
+The app lets you:
+- switch between baseline, random, and DQN policies
+- change scenario and seed
+- inspect queue length, waiting time, counters, and reward curves interactively
+
+## Docker
+Build and run:
+
+```powershell
+docker build -t queue-waiting-time-optimizer .
+docker run -p 7860:7860 queue-waiting-time-optimizer
+```
+
+## Hugging Face Spaces
+Use the root `app.py` file as the Space entrypoint. See [HUGGINGFACE_SPACES.md](HUGGINGFACE_SPACES.md) for deployment notes.
+
+## Reproducibility
+- Global seeds are centralized in `src/qwt_optimizer/core.py` and `src/qwt_optimizer/utils/seeding.py`.
+- Scripts accept explicit `--seed` values.
+- Evaluation reuses the same seed across scenarios and episodes where practical.
+
+## Packaging Notes
+- The project now supports editable installation via `pyproject.toml`.
+- Use `pip install -e .[dev]` during local development so imports work from anywhere in the project without setting `PYTHONPATH`.
+
+## Notes
+- The OpenEnv dependency is included in `requirements.txt` as requested.
+- If your environment uses a different pip package name for OpenEnv, adjust `requirements.txt` before deployment.
+- The current implementation is practical and runnable with Gymnasium + SB3, while leaving room for deeper OpenEnv server integration if needed later.

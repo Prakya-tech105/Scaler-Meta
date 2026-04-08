@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "queue-waiting-time-optimizer"
+version = "0.1.0"
+description = "RL-based queue waiting time optimization with Gymnasium and Stable-Baselines3"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Queue Waiting Time Optimizer Team" }]
+dependencies = [
+  "numpy",
+  "gymnasium",
+  "stable-baselines3",
+  "torch",
+  "matplotlib",
+  "plotly",
+  "gradio",
+  "pandas",
+  "pyyaml",
+  "openenv",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["qwt_optimizer*"]
